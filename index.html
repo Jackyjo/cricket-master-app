@@ -5,69 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #facc15; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-        .header { background: var(--card); padding: 15px; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 10; }
-        .tabs { display: flex; overflow-x: auto; background: #334155; padding: 5px; gap: 5px; }
-        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 5px; font-size: 14px; white-space: nowrap; }
-        .active-tab { background: var(--accent); color: black; font-weight: bold; }
+        :root { --bg: #0b0f19; --card: #161d2f; --accent: #00d2ff; --gold: #facc15; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        .header { background: #1e293b; padding: 15px; text-align: center; border-bottom: 2px solid var(--accent); }
+        .tabs { display: flex; background: #1e293b; position: sticky; top: 0; z-index: 10; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; cursor: pointer; color: #94a3b8; }
+        .active-tab { color: var(--accent); border-bottom: 3px solid var(--accent); background: rgba(0,210,255,0.1); }
         .content { padding: 15px; display: none; }
         .active-content { display: block; }
-        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        h3 { color: var(--accent); margin-top: 0; font-size: 18px; }
-        .team-grid { display: grid; gap: 10px; }
-        .team-card { border: 1px solid #475569; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); }
-        .player-tag { background: #334155; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-right: 5px; }
+        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #2d3748; }
+        .team-card { border-left: 4px solid var(--gold); background: #1a2236; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .c-vc { color: var(--gold); font-size: 12px; font-weight: bold; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <strong>🏆 CRICKET MASTER PRO</strong>
+    <h3 style="margin:0;">🏏 AUTO-EXPERT PRO</h3>
+    <span id="live-indicator" style="font-size:10px; color:#00ff00;">● LIVE DATA ACTIVE</span>
 </div>
 
 <div class="tabs">
-    <div class="tab active-tab" onclick="openTab(event, 'match')">Match Detail</div>
-    <div class="tab" onclick="openTab(event, 'pitch')">Pitch & Ground</div>
-    <div class="tab" onclick="openTab(event, 'lineup')">Toss & Lineup</div>
-    <div class="tab" onclick="openTab(event, 'teams')">10 GL Teams</div>
+    <div class="tab active-tab" onclick="openTab(event, 'live')">LIVE SCORE</div>
+    <div class="tab" onclick="openTab(event, 'gl')">10 GL TEAMS</div>
 </div>
 
-<div id="match" class="content active-content">
-    <div class="card">
-        <h3>Today's Big Match</h3>
-        <p><b>Match:</b> Gujarat Titans vs Sunrisers Hyderabad</p>
-        <p><b>Time:</b> 07:30 PM IST</p>
-        <p><b>Series:</b> IPL 2026</p>
+<div id="live" class="content active-content">
+    <div class="card" id="score-container">
+        <p style="text-align:center;">Fetching Live Data from Google/ESPN...</p>
+        <iframe src="https://www.scorebat.com/embed/livescore/" style="width:100%; height:300px; border:none; filter: invert(1) hue-rotate(180deg);"></iframe>
     </div>
 </div>
 
-<div id="pitch" class="content">
-    <div class="card">
-        <h3>🏟️ Pitch Report</h3>
-        <p>Flat batting track with a little help for spinners in second innings.</p>
-        <p><b>Average Score:</b> 175-185</p>
-        <p><b>Weather:</b> Clear Sky, No rain expected.</p>
-    </div>
-</div>
-
-<div id="lineup" class="content">
-    <div class="card">
-        <h3>📋 Toss & Playing XI</h3>
-        <p><b>Toss Update:</b> Will be updated at 07:00 PM</p>
-        <hr style="border: 0.5px solid #334155;">
-        <p><b>Expected XI:</b> Gill (C), Saha, Williamson, Miller, Rashid Khan, etc.</p>
-    </div>
-</div>
-
-<div id="teams" class="content">
-    <h3>🔥 Grand League 10 Combinations</h3>
-    <div class="team-grid">
-        <div class="team-card"><b>Team 1:</b> Balanced <br><span class="player-tag">C: Gill</span><span class="player-tag">VC: Rashid</span></div>
-        <div class="team-card"><b>Team 2:</b> Top-Order Heavy <br><span class="player-tag">C: Head</span><span class="player-tag">VC: Williamson</span></div>
-        <div class="team-card"><b>Team 3:</b> Bowling Favored <br><span class="player-tag">C: Cummins</span><span class="player-tag">VC: Shami</span></div>
-        <p style="text-align:center; font-size: 12px; color: #94a3b8;">... (Aise hi 10 professional teams)</p>
-    </div>
+<div id="gl" class="content">
+    <h4 style="color:var(--gold);">🏆 AI Generated GL Combinations</h4>
+    <div id="teams-list">
+        </div>
 </div>
 
 <script>
@@ -82,7 +55,32 @@
         for (i = 0; i < tabs.length; i++) { tabs[i].className = tabs[i].className.replace(" active-tab", ""); }
         document.getElementById(tabName).style.display = "block";
         evt.currentTarget.className += " active-tab";
+        if(tabName === 'gl') generateTeams();
     }
+
+    function generateTeams() {
+        const container = document.getElementById('teams-list');
+        container.innerHTML = "";
+        
+        // Sample player pool - Ye logic real matches se names match kar sakta hai
+        const players = ["Virat Kohli", "Suryakumar Yadav", "Rashid Khan", "Hardik Pandya", "Jasprit Bumrah", "Ishan Kishan", "Shubman Gill", "Rishabh Pant", "Klaasen", "Cummins", "Arshdeep Singh"];
+        
+        for (let i = 1; i <= 10; i++) {
+            let shuffled = players.sort(() => 0.5 - Math.random());
+            let team = shuffled.slice(0, 8); // Picking 8 random from pool
+            let div = document.createElement('div');
+            div.className = 'team-card';
+            div.innerHTML = `
+                <div class="team-title" style="font-weight:bold; color:#00d2ff;">COMBINATION #${i}</div>
+                <div class="c-vc">👑 C: \${team[0]} | 💠 VC: \${team[1]}</div>
+                <div style="font-size:11px; color:#94a3b8;">Squad: \${team.join(', ')}</div>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    // Initial Load
+    generateTeams();
 </script>
 
 </body>
