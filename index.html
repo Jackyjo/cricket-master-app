@@ -5,74 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: #0b0f19; --card: #1e293b; --accent: #00d2ff; --gold: #facc15; --text: #f8fafc; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-        .header { background: #161d2f; padding: 15px; text-align: center; border-bottom: 2px solid var(--accent); }
-        .tabs { display: flex; background: #161d2f; position: sticky; top: 0; z-index: 10; }
-        .tab { flex: 1; padding: 12px; text-align: center; font-size: 14px; cursor: pointer; color: #94a3b8; }
-        .active-tab { color: var(--accent); border-bottom: 2px solid var(--accent); background: rgba(0,210,255,0.05); }
-        .content { padding: 15px; display: none; }
-        .active-content { display: block; }
-        .team-box { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid var(--gold); }
-        .c-vc { font-weight: bold; color: var(--gold); margin-bottom: 5px; font-size: 14px; }
-        .players { font-size: 12px; color: #cbd5e1; }
+        :root { --bg: #0b0f19; --card: #161d2f; --accent: #00d2ff; --gold: #facc15; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: auto; }
+        .app-container { display: flex; gap: 12px; padding: 15px; min-width: 1500px; height: 90vh; }
+        .column { flex: 0 0 280px; background: var(--card); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; }
+        .col-header { background: #1e293b; padding: 12px; border-radius: 12px 12px 0 0; border-bottom: 2px solid var(--accent); text-align: center; font-weight: bold; font-size: 13px; color: var(--gold); }
+        .col-content { padding: 10px; overflow-y: auto; flex-grow: 1; font-size: 12px; }
+        .card-inner { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
+        .player-tag { display: inline-block; background: #334155; padding: 2px 6px; border-radius: 4px; margin: 2px; font-size: 11px; }
+        .playing-xi { border-left-color: #10b981; }
+        .team-box { border-left: 3px solid #ef4444; background: #1a2236; padding: 8px; margin-bottom: 8px; border-radius: 4px; }
+        ::-webkit-scrollbar { height: 8px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h3 style="margin:0; color: var(--gold);">🏏 CRICKET EXPERT PRO</h3>
-    <div id="timer" style="font-size:10px; color:#00ff00; margin-top:5px;">Refreshing teams...</div>
-</div>
+<div class="app-container">
+    
+    <!-- Col 1: Match Info -->
+    <div class="column">
+        <div class="col-header">1. MATCH DETAILS</div>
+        <div class="col-content">
+            <div class="card-inner">
+                <b id="match-title">Loading...</b><br>
+                <p id="venue">Eden Gardens, Kolkata</p>
+                <p id="time">07:30 PM IST</p>
+            </div>
+        </div>
+    </div>
 
-<div class="tabs">
-    <div class="tab active-tab" onclick="showTab('score')">LIVE SCORE</div>
-    <div class="tab" onclick="showTab('teams')">10 GL TEAMS</div>
-</div>
+    <!-- Col 2: Toss & Pitch -->
+    <div class="column">
+        <div class="col-header">2. TOSS & PITCH</div>
+        <div class="col-content">
+            <div class="card-inner">
+                <b>Pitch:</b> Balanced<br>
+                <b>Toss:</b> KKR won & elected to BAT
+            </div>
+        </div>
+    </div>
 
-<div id="score" class="content active-content">
-    <iframe src="https://m.cricbuzz.com/cricket-match-results" style="width:100%; height:500px; border:none; border-radius:10px;"></iframe>
-</div>
+    <!-- Col 3: Previous Squad (Historical Data) -->
+    <div class="column">
+        <div class="col-header">3. PREVIOUS SQUAD</div>
+        <div class="col-content" id="prev-squad">
+            <p style="font-size:10px; color:#94a3b8;">Fetching historical data...</p>
+        </div>
+    </div>
 
-<div id="teams" class="content">
-    <div id="gl-container"></div>
+    <!-- Col 4: Live Lineup (From Master List) -->
+    <div class="column">
+        <div class="col-header" style="color:#10b981;">4. LIVE LINEUP</div>
+        <div class="col-content" id="live-lineup">
+            <p>Waiting for Toss...</p>
+        </div>
+    </div>
+
+    <!-- Col 5: 10 GL Teams -->
+    <div class="column">
+        <div class="col-header">5. 10 MEGA GL TEAMS</div>
+        <div class="col-content" id="gl-teams">
+            <p>Analyzing Final XI...</p>
+        </div>
+    </div>
+
 </div>
 
 <script>
-    let tg = window.Telegram.WebApp;
-    tg.expand();
+    // Master Database from your list[span_4](start_span)[span_4](end_span)
+    const masterData = {
+        "KKR": ["Rinku Singh", "Sunil Narine", "Varun Chakaravarthy", "Harshit Rana", "Ramandeep Singh", "Vaibhav Arora", "Cameron Green", "Manish Pandey"],
+        "SRH": ["Pat Cummins", "Heinrich Klaasen", "Abhishek Sharma", "Travis Head", "Nitish Kumar Reddy", "Ishan Kishan", "Shahbaz Ahmed", "T. Natarajan"],
+        "MI": ["Jasprit Bumrah", "Hardik Pandya", "Suryakumar Yadav", "Rohit Sharma", "Tilak Varma", "Mitchell Starc", "Naman Dhir"]
+    };
 
-    function showTab(name) {
-        document.querySelectorAll('.content').forEach(c => c.style.display = 'none');
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
-        document.getElementById(name).style.display = 'block';
-        event.currentTarget.classList.add('active-tab');
-        if(name === 'teams') renderTeams();
+    function startApp() {
+        // 1. Fixing Teams (Assume KKR vs SRH)
+        const teamA = "KKR";
+        const teamB = "SRH";
+        document.getElementById('match-title').innerText = teamA + " vs " + teamB;
+
+        // 2. Col 3: Showing Previous Squad
+        const prevSquad = [...masterData[teamA], ...masterData[teamB]];
+        document.getElementById('prev-squad').innerHTML = prevSquad.map(p => `<span class="player-tag">${p}</span>`).join("");
+
+        // 3. Col 4: Simulating Lineup Logic (Filter from Master)
+        // Match ke waqt yahan sirf 11 players filter honge
+        const finalXI = [...masterData[teamA].slice(0,6), ...masterData[teamB].slice(0,5)];
+        document.getElementById('live-lineup').innerHTML = finalXI.map(p => `<div class="card-inner playing-xi">✅ ${p}</div>`).join("");
+
+        // 4. Col 5: Generating GL Teams
+        generateGL(finalXI);
     }
 
-    function renderTeams() {
-        const container = document.getElementById('gl-container');
+    function generateGL(players) {
+        const container = document.getElementById('gl-teams');
         container.innerHTML = "";
-        const players = ["Virat Kohli", "Shubman Gill", "Rashid Khan", "Hardik Pandya", "Suryakumar Yadav", "Jasprit Bumrah", "Travis Head", "Ishan Kishan", "Pat Cummins", "Rishabh Pant", "Arshdeep Singh", "Sanju Samson"];
-
-        for (let i = 1; i <= 10; i++) {
-            let shuffled = players.sort(() => 0.5 - Math.random());
-            let team = shuffled.slice(0, 11);
-            let div = document.createElement('div');
-            div.className = 'team-box';
-            // Fixed String logic for GitHub
-            div.innerHTML = '<div style="font-size:11px; color:#00d2ff; margin-bottom:5px;">COMBINATION #' + i + '</div>' +
-                            '<div class="c-vc">👑 C: ' + team[0] + ' | 💠 VC: ' + team[1] + '</div>' +
-                            '<div class="players"><b>Squad:</b> ' + team.join(', ') + '</div>';
-            container.appendChild(div);
+        for(let i=1; i<=10; i++) {
+            let shuf = [...players].sort(() => 0.5 - Math.random());
+            container.innerHTML += `<div class="team-box"><b>TEAM #${i}</b><br><span style="color:var(--gold)">C: ${shuf[0]} | VC: ${shuf[1]}</span></div>`;
         }
-        document.getElementById('timer').innerText = "● Teams Updated: " + new Date().toLocaleTimeString();
     }
 
-    // Har 60 second mein teams apne aap badlengi
-    setInterval(renderTeams, 60000);
-    renderTeams();
+    startApp();
 </script>
-
 </body>
-</html>         
+</html>
