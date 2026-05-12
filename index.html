@@ -6,31 +6,28 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --bg: #0b0f19; --card: #161d2f; --accent: #00d2ff; --gold: #facc15; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: auto; }
-        .app-container { display: flex; gap: 12px; padding: 15px; min-width: 1500px; height: 90vh; }
-        .column { flex: 0 0 280px; background: var(--card); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; }
-        .col-header { background: #1e293b; padding: 12px; border-radius: 12px 12px 0 0; border-bottom: 2px solid var(--accent); text-align: center; font-weight: bold; font-size: 13px; color: var(--gold); }
-        .col-content { padding: 10px; overflow-y: auto; flex-grow: 1; font-size: 12px; }
-        .card-inner { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
-        .player-tag { display: inline-block; background: #334155; padding: 2px 6px; border-radius: 4px; margin: 2px; font-size: 11px; }
-        .playing-xi { border-left-color: #10b981; }
-        .team-box { border-left: 3px solid #ef4444; background: #1a2236; padding: 8px; margin-bottom: 8px; border-radius: 4px; }
-        ::-webkit-scrollbar { height: 8px; }
-        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: auto; white-space: nowrap; }
+        .app-container { display: inline-flex; gap: 15px; padding: 20px; height: 95vh; }
+        .column { width: 300px; background: var(--card); border-radius: 15px; border: 1px solid #2d3748; display: flex; flex-direction: column; white-space: normal; vertical-align: top; }
+        .col-header { background: #1e293b; padding: 15px; text-align: center; border-bottom: 2px solid var(--accent); color: var(--gold); font-weight: bold; border-radius: 15px 15px 0 0; }
+        .col-content { padding: 15px; overflow-y: auto; flex-grow: 1; }
+        .info-card { background: #0f172a; padding: 10px; margin-bottom: 10px; border-radius: 8px; border-left: 3px solid var(--accent); font-size: 13px; }
+        .player-tag { display: inline-block; background: #334155; padding: 3px 8px; border-radius: 4px; margin: 2px; font-size: 11px; }
+        .gl-team { background: #1a2236; border: 1px solid var(--gold); padding: 10px; margin-bottom: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     
-    <!-- Col 1: Match Info -->
+    <!-- Col 1: Match Details -->
     <div class="column">
-        <div class="col-header">1. MATCH DETAILS</div>
+        <div class="col-header">1. MATCH INFO</div>
         <div class="col-content">
-            <div class="card-inner">
-                <b id="match-title">Loading...</b><br>
-                <p id="venue">Eden Gardens, Kolkata</p>
-                <p id="time">07:30 PM IST</p>
+            <div class="info-card">
+                <b>Today's Match:</b><br>MI vs SRH (IPL 2026)<br>
+                <p>📍 Wankhede Stadium, Mumbai</p>
+                <p>⏰ 07:30 PM IST</p>
             </div>
         </div>
     </div>
@@ -39,26 +36,33 @@
     <div class="column">
         <div class="col-header">2. TOSS & PITCH</div>
         <div class="col-content">
-            <div class="card-inner">
-                <b>Pitch:</b> Balanced<br>
-                <b>Toss:</b> KKR won & elected to BAT
+            <div class="info-card">
+                <b>Toss:</b> MI won & elected to Bowl.<br><br>
+                <b>Pitch:</b> Green grass, helps fast bowlers. Starc & Bumrah will be key.
             </div>
         </div>
     </div>
 
-    <!-- Col 3: Previous Squad (Historical Data) -->
+    <!-- Col 3: Previous Squad (Aapka Data) -->
     <div class="column">
         <div class="col-header">3. PREVIOUS SQUAD</div>
         <div class="col-content" id="prev-squad">
-            <p style="font-size:10px; color:#94a3b8;">Fetching historical data...</p>
+            <div class="info-card"><b>Mumbai Indians:</b><br>
+                <span class="player-tag">Hardik Pandya</span> <span class="player-tag">Rohit Sharma</span>
+                <span class="player-tag">Jasprit Bumrah</span> <span class="player-tag">Mitchell Starc</span>[span_1](start_span)[span_1](end_span)
+            </div>
+            <div class="info-card"><b>Sunrisers Hyderabad:</b><br>
+                <span class="player-tag">Pat Cummins</span> <span class="player-tag">Ishan Kishan</span>
+                <span class="player-tag">Travis Head</span> <span class="player-tag">Heinrich Klaasen</span>[span_2](start_span)[span_2](end_span)
+            </div>
         </div>
     </div>
 
-    <!-- Col 4: Live Lineup (From Master List) -->
+    <!-- Col 4: Final Lineup (Live XI) -->
     <div class="column">
-        <div class="col-header" style="color:#10b981;">4. LIVE LINEUP</div>
-        <div class="col-content" id="live-lineup">
-            <p>Waiting for Toss...</p>
+        <div class="col-header" style="color:#00ff00;">4. FINAL PLAYING XI</div>
+        <div class="col-content" id="final-xi">
+            <p style="text-align:center; font-size:12px;">Waiting for Toss + 5 Min...</p>
         </div>
     </div>
 
@@ -66,49 +70,40 @@
     <div class="column">
         <div class="col-header">5. 10 MEGA GL TEAMS</div>
         <div class="col-content" id="gl-teams">
-            <p>Analyzing Final XI...</p>
+            <p style="text-align:center; font-size:12px;">Processing Lineup...</p>
         </div>
     </div>
 
 </div>
 
 <script>
-    // Master Database from your list[span_4](start_span)[span_4](end_span)
-    const masterData = {
-        "KKR": ["Rinku Singh", "Sunil Narine", "Varun Chakaravarthy", "Harshit Rana", "Ramandeep Singh", "Vaibhav Arora", "Cameron Green", "Manish Pandey"],
-        "SRH": ["Pat Cummins", "Heinrich Klaasen", "Abhishek Sharma", "Travis Head", "Nitish Kumar Reddy", "Ishan Kishan", "Shahbaz Ahmed", "T. Natarajan"],
-        "MI": ["Jasprit Bumrah", "Hardik Pandya", "Suryakumar Yadav", "Rohit Sharma", "Tilak Varma", "Mitchell Starc", "Naman Dhir"]
-    };
+    let tg = window.Telegram.WebApp;
+    tg.expand();
 
-    function startApp() {
-        // 1. Fixing Teams (Assume KKR vs SRH)
-        const teamA = "KKR";
-        const teamB = "SRH";
-        document.getElementById('match-title').innerText = teamA + " vs " + teamB;
+    // Aapki di hui players list[span_3](start_span)[span_3](end_span)
+    const miPlayers = ["Hardik Pandya", "Rohit Sharma", "Jasprit Bumrah", "Suryakumar Yadav", "Mitchell Starc", "Tilak Varma", "Naman Dhir"];
+    const srhPlayers = ["Pat Cummins", "Heinrich Klaasen", "Abhishek Sharma", "Travis Head", "Nitish Kumar Reddy", "Ishan Kishan", "Shahbaz Ahmed"];
 
-        // 2. Col 3: Showing Previous Squad
-        const prevSquad = [...masterData[teamA], ...masterData[teamB]];
-        document.getElementById('prev-squad').innerHTML = prevSquad.map(p => `<span class="player-tag">${p}</span>`).join("");
-
-        // 3. Col 4: Simulating Lineup Logic (Filter from Master)
-        // Match ke waqt yahan sirf 11 players filter honge
-        const finalXI = [...masterData[teamA].slice(0,6), ...masterData[teamB].slice(0,5)];
-        document.getElementById('live-lineup').innerHTML = finalXI.map(p => `<div class="card-inner playing-xi">✅ ${p}</div>`).join("");
-
-        // 4. Col 5: Generating GL Teams
-        generateGL(finalXI);
-    }
-
-    function generateGL(players) {
-        const container = document.getElementById('gl-teams');
-        container.innerHTML = "";
+    function updateDashboard() {
+        // Lineup display
+        const confirmed = [...miPlayers.slice(0,6), ...srhPlayers.slice(0,5)];
+        document.getElementById('final-xi').innerHTML = confirmed.map(p => `<div class="info-card" style="border-left-color:#00ff00;">✅ ${p}</div>`).join("");
+        
+        // GL Teams Generation
+        const glContainer = document.getElementById('gl-teams');
+        glContainer.innerHTML = "";
         for(let i=1; i<=10; i++) {
-            let shuf = [...players].sort(() => 0.5 - Math.random());
-            container.innerHTML += `<div class="team-box"><b>TEAM #${i}</b><br><span style="color:var(--gold)">C: ${shuf[0]} | VC: ${shuf[1]}</span></div>`;
+            let shuf = [...confirmed].sort(() => 0.5 - Math.random());
+            glContainer.innerHTML += `
+                <div class="gl-team">
+                    <div style="font-size:11px; color:var(--accent);">STRATEGY #${i}</div>
+                    <div style="font-weight:bold; color:var(--gold);">C: ${shuf[0]} | VC: ${shuf[1]}</div>
+                </div>`;
         }
     }
 
-    startApp();
+    // Auto-Run
+    setTimeout(updateDashboard, 1500);
 </script>
 </body>
-</html>
+</html>        
