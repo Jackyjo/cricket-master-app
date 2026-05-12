@@ -7,13 +7,13 @@
     <style>
         :root { --bg: #0b0f19; --card: #161d2f; --accent: #00d2ff; --gold: #facc15; --text: #f8fafc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: auto; }
-        .dashboard { display: flex; gap: 15px; padding: 20px; min-width: 1500px; height: 95vh; box-sizing: border-box; }
-        .column { width: 280px; background: var(--card); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; flex-shrink: 0; }
-        .col-header { background: #1e293b; padding: 12px; text-align: center; border-bottom: 2px solid var(--accent); color: var(--gold); font-weight: bold; border-radius: 12px 12px 0 0; font-size: 13px; }
+        .dashboard { display: flex; gap: 15px; padding: 20px; min-width: 1600px; height: 95vh; box-sizing: border-box; }
+        .column { width: 300px; background: var(--card); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; flex-shrink: 0; }
+        .col-header { background: #1e293b; padding: 12px; text-align: center; border-bottom: 2px solid var(--accent); color: var(--gold); font-weight: bold; font-size: 13px; }
         .col-content { padding: 12px; overflow-y: auto; flex-grow: 1; white-space: normal; }
         .card-inner { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--accent); font-size: 12px; }
+        .playing-xi { border-left-color: #00ff00; background: rgba(0,255,0,0.05); }
         .team-box { background: #1a2236; border-left: 3px solid var(--gold); padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 11px; }
-        .playing-xi { border-left-color: #00ff00; }
         ::-webkit-scrollbar { height: 8px; }
         ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     </style>
@@ -21,81 +21,92 @@
 <body>
 
 <div class="dashboard">
-    
-    <!-- Col 1: Match Schedule -->
+    <!-- Col 1: Current Match Schedule -->
     <div class="column">
-        <div class="col-header">1. MATCH DETAILS</div>
-        <div class="col-content">
+        <div class="col-header">1. [span_4](start_span)MATCH INFO (LIVE)</div>
+        <div class="col-content" id="match-info">
             <div class="card-inner">
-                <b id="match-day">UPCOMING MATCH</b><br>
-                <span id="teams-playing">KKR vs MI</span><br>
-                <p>🕒 07:30 PM | IPL 2026</p>
+                <b style="color:var(--accent)">NEXT MATCH</b><br>
+                <b>RCB vs KKR</b><br>
+                📅 13 May | 🕒 07:30 PM<br>
+                📍 Raipur[span_4](end_span)
+            </div>
+            <div class="card-inner" style="opacity:0.6">
+                <b>Upcoming:</b> PBKS vs MI<br>
+                📅 14 May | 📍 Dharamshala
             </div>
         </div>
     </div>
 
-    <!-- Col 2: Toss & Pitch -->
+    <!-- Col 2: Toss & Pitch Report -->
     <div class="column">
-        <div class="col-header">2. TOSS & PITCH</div>
-        <div class="col-content" id="toss-pitch">
-            <div class="card-inner">Fetching live toss...</div>
+        <div class="col-header">2. [span_5](start_span)TOSS & PITCH</div>
+        <div class="col-content">
+            <div class="card-inner">
+                <b>Pitch:</b> Slow & Low (Raipur)[span_5](end_span)<br>
+                <b>Toss Update:</b> Updating at 7:00 PM IST
+            </div>
         </div>
     </div>
 
     <!-- Col 3: Previous Squad (Aapka Master Data) -->
     <div class="column">
-        <div class="col-header">3. PREVIOUS SQUAD</div>
-        <div class="col-content" id="prev-squad"></div>
+        <div class="col-header">3. FULL SQUAD POOL</div>
+        <div class="col-content" id="squad-pool"></div>
     </div>
 
     <!-- Col 4: Final Lineup (Toss + 5 Min) -->
     <div class="column">
         <div class="col-header" style="color:#00ff00;">4. FINAL PLAYING XI</div>
-        <div class="col-content" id="lineup">Waiting for lineup...</div>
+        <div class="col-content" id="lineup">
+            <p style="text-align:center; font-size:11px;">Waiting for Toss...</p>
+        </div>
     </div>
 
-    <!-- Col 5: 10 GL Expert Teams -->
+    <!-- Col 5: 10 GL Teams (Strict After Lineup) -->
     <div class="column">
         <div class="col-header">5. 10 MEGA GL TEAMS</div>
-        <div class="col-content" id="gl-teams"></div>
+        <div class="col-content" id="gl-teams">
+            <p id="gl-status" style="text-align:center; font-size:11px;">Teams will appear AFTER lineup is confirmed.</p>
+        </div>
     </div>
-
 </div>
 
 <script>
-    let tg = window.Telegram.WebApp; tg.expand();
-
-    // Fixing players as per your shared list[span_3](start_span)[span_3](end_span)
+    // 2026 Master Database from your shared list[span_6](start_span)[span_6](end_span)
     const squads = {
-        "KKR": ["Rinku Singh", "Cameron Green", "Sunil Narine", "Harshit Rana", "Russell", "Varun C", "Vaibhav Arora"],
-        "MI": ["Hardik Pandya", "Rohit Sharma", "Jasprit Bumrah", "Suryakumar Yadav", "Mitchell Starc", "Tilak Varma"]
+        "RCB": ["Virat Kohli", "Josh Hazlewood", "Rajat Patidar", "Jitesh Sharma", "Bhuvi", "Krunal Pandya", "Yash Dayal"],
+        "KKR": ["Rinku Singh", "Cameron Green", "Sunil Narine", "Harshit Rana", "Russell", "Varun C", "Vaibhav Arora"]
     };
 
-    function loadMatchData() {
-        const teamA = "KKR";
-        const teamB = "MI";
+    function syncDashboard() {
+        // Col 3: Showing your master list[span_7](start_span)[span_7](end_span)
+        const allPlayers = [...squads["RCB"], ...squads["KKR"]];
+        document.getElementById('squad-pool').innerHTML = allPlayers.map(p => `<div class="card-inner">${p}</div>`).join("");
 
-        // Col 2: Simulated Toss
-        document.getElementById('toss-pitch').innerHTML = `<div class="card-inner"><b>Toss:</b> ${teamA} won and elected to Bat.<br><br><b>Pitch:</b> High scoring ground.</div>`;
+        // Simulation: Lineup comes at 7:05 PM
+        // Real-world: Yahan live server data filter hota hai
+        const isLineupOut = true; // Set to true after toss
 
-        // Col 3: Showing all players from your list[span_4](start_span)[span_4](end_span)
-        const allPlayers = [...squads[teamA], ...squads[teamB]];
-        document.getElementById('prev-squad').innerHTML = allPlayers.map(p => `<div class="card-inner">${p}</div>`).join("");
-
-        // Col 4: Lineup filter (only confirmed 11-11)
-        const playingXI = [...squads[teamA].slice(0,6), ...squads[teamB].slice(0,5)];
-        document.getElementById('lineup').innerHTML = playingXI.map(p => `<div class="card-inner playing-xi">✅ ${p}</div>`).join("");
-
-        // Col 5: 10 GL Teams based on Lineup
-        const glContainer = document.getElementById('gl-teams');
-        glContainer.innerHTML = "";
-        for(let i=1; i<=10; i++) {
-            let shuf = [...playingXI].sort(() => 0.5 - Math.random());
-            glContainer.innerHTML += `<div class="team-box"><b>TEAM #${i}</b><br><span style="color:var(--gold)">C: ${shuf[0]} | VC: ${shuf[1]}</span></div>`;
+        if(isLineupOut) {
+            const playingXI = allPlayers.slice(0, 11); // Filtering 11 confirmed
+            document.getElementById('lineup').innerHTML = playingXI.map(p => `<div class="card-inner playing-xi">✅ ${p}</div>`).join("");
+            
+            // Generate GL Teams ONLY if lineup is out
+            generateTeams(playingXI);
         }
     }
 
-    loadMatchData();
+    function generateTeams(players) {
+        const glBox = document.getElementById('gl-teams');
+        glBox.innerHTML = "";
+        for(let i=1; i<=10; i++) {
+            let shuf = [...players].sort(() => 0.5 - Math.random());
+            glBox.innerHTML += `<div class="team-box"><b>COMBINATION #${i}</b><br><span style="color:var(--gold)">C: ${shuf[0]} | VC: ${shuf[1]}</span></div>`;
+        }
+    }
+
+    syncDashboard();
 </script>
 </body>
 </html>
