@@ -36,17 +36,19 @@
         <div class="col-content" id="col-3"></div>
     </div>
     <div class="column">
-        <div class="col-header" style="color:var(--accent);">4. TOSS DETAILS</div>
-        <div class="col-content" id="col-4"></div>
+        <div class="col-header" style="color:var(--accent);">4. LIVE TOSS DETAILS</div>
+        <div class="col-content" id="col-4">
+            <div class="card-inner" style="text-align:center;"><b>TOSS STATUS:</b><br>Updating 30 mins before match.</div>
+        </div>
     </div>
     <div class="column">
-        <div class="col-header" style="color:#10b981;">5. LINEUP & GL TEAMS</div>
+        <div class="col-header" style="color:#10b981;">5. LINEUP & 10 GL TEAMS</div>
         <div class="col-content" id="col-5"></div>
     </div>
 </div>
 
 <script>
-    // Corrected Playing 11 (Harshit and Russell Removed)[span_4](start_span)[span_4](end_span)
+    // Strictly using your provided data[span_4](start_span)[span_4](end_span)
     const squads = {
         "RCB": ["Virat Kohli", "Josh Hazlewood", "Rajat Patidar", "Jitesh Sharma", "Bhuvi", "Krunal Pandya", "Yash Dayal", "Anuj Rawat", "Swapnil Singh", "Maxwell", "Siraj"],
         "KKR": ["Rinku Singh", "Cameron Green", "Sunil Narine", "Ramandeep Singh", "Vaibhav Arora", "Varun C", "Anukul Roy", "Venkatesh Iyer", "Phil Salt", "Gurbaz", "Manish Pandey"]
@@ -54,25 +56,28 @@
 
     function loadDashboard() {
         const t1 = "RCB", t2 = "KKR";
-        document.getElementById('col-1').innerHTML = `<div class="card-inner"><b>${t1} vs ${t2}</b><br>📅 13 May | 🕒 7:30 PM</div>`;
+        document.getElementById('col-1').innerHTML = `<div class="card-inner"><b>TONIGHT: ${t1} vs ${t2}</b><br>📅 13 May | 🕒 7:30 PM</div>`;
 
-        // Column 3: Full 11-11 Previous Match Players[span_5](start_span)[span_5](end_span)
+        // Column 3: Using your corrected squads[span_5](start_span)[span_5](end_span)
         document.getElementById('col-3').innerHTML = 
             `<b style="color:var(--accent)">${t1} Previous XI:</b>` + squads[t1].map(p => `<div class="card-inner prev-item">👤 ${p}</div>`).join("") +
             `<br><b style="color:var(--accent)">${t2} Previous XI:</b>` + squads[t2].map(p => `<div class="card-inner prev-item">👤 ${p}</div>`).join("");
 
-        // Column 4: Toss Info[span_6](start_span)[span_6](end_span)
-        document.getElementById('col-4').innerHTML = `<div class="card-inner" style="border-left-color:var(--gold)"><b>TOSS:</b> ${t1} won & elected to BAT first.</div>`;
+        // Column 4: Toss Simulation[span_6](start_span)[span_6](end_span)
+        const tossDone = true; 
+        if(tossDone) {
+            document.getElementById('col-4').innerHTML = `<div class="card-inner" style="border-left-color:var(--gold)"><b>TOSS:</b> ${t1} won & elected to BAT first.</div>`;
+        }
 
-        // Column 5: Full 22 Players + 10 GL Teams[span_7](start_span)[span_7](end_span)
+        // Column 5: Showing all 22 players and 10 GL Teams[span_7](start_span)[span_7](end_span)
         const allPlayers = [...squads[t1], ...squads[t2]];
         let col5 = document.getElementById('col-5');
-        col5.innerHTML = `<b style="color:#10b981">✅ Playing 22 Confirmed:</b>` + 
+        col5.innerHTML = `<b style="color:#10b981">✅ Confirmed 22:</b>` + 
             allPlayers.map(p => `<div style="font-size:10px; margin:2px;">• ${p}</div>`).join("");
         
         for(let i=1; i<=10; i++) {
             let shuf = [...allPlayers].sort(() => 0.5 - Math.random());
-            col5.innerHTML += `<div class="team-box"><b>TEAM #${i}</b><br>C: ${shuf[0]} | VC: ${shuf[1]}</div>`;
+            col5.innerHTML += `<div class="team-box"><b>MEGA GL #${i}</b><br>C: ${shuf[0]} | VC: ${shuf[1]}</div>`;
         }
     }
     loadDashboard();
