@@ -7,21 +7,21 @@
     <style>
         :root { --bg: #0b0f19; --card: #161d2f; --accent: #00d2ff; --gold: #facc15; --text: #f8fafc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: auto; }
-        .dashboard { display: flex; gap: 12px; padding: 20px; min-width: 1600px; height: 95vh; box-sizing: border-box; }
+        .dashboard { display: flex; gap: 15px; padding: 20px; min-width: 1600px; height: 95vh; box-sizing: border-box; }
         .column { width: 300px; background: var(--card); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; flex-shrink: 0; }
         .col-header { background: #1e293b; padding: 12px; text-align: center; border-bottom: 2px solid var(--accent); color: var(--gold); font-weight: bold; font-size: 13px; }
         .col-content { padding: 12px; overflow-y: auto; flex-grow: 1; white-space: normal; }
         .card-inner { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--accent); font-size: 12px; }
-        .prev-item { border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); }
-        .team-box { background: #1a2236; border-left: 3px solid var(--gold); padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 11px; }
+        .live-xi { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .team-box { background: #1a2236; border-left: 3px solid var(--gold); padding: 10px; margin-bottom: 10px; border-radius: 6px; font-size: 11px; }
         ::-webkit-scrollbar { height: 8px; }
         ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="dashboard" id="main-dashboard">
-    <!-- Col 1: Match Details -->
+<div class="dashboard">
+    <!-- Col 1: Match Info -->
     <div class="column">
         <div class="col-header">1. MATCH INFO</div>
         <div class="col-content" id="col-1"></div>
@@ -30,78 +30,78 @@
     <!-- Col 2: Toss & Pitch -->
     <div class="column">
         <div class="col-header">2. TOSS & PITCH</div>
-        <div class="col-content" id="col-2"></div>
+        <div class="col-content" id="col-2">
+            <div class="card-inner"><b>Toss Update:</b><br>Will be updated 30 mins before match.</div>
+        </div>
     </div>
 
-    <!-- Col 3: Master Squad Pool -->
+    <!-- Col 3: Master Pool -->
     <div class="column">
         <div class="col-header">3. FULL SQUAD POOL</div>
         <div class="col-content" id="col-3"></div>
     </div>
 
-    <!-- Col 4: Previous XI (Both Teams) -->
+    <!-- Col 4: Previous Match Playing XI -->
     <div class="column">
-        <div class="col-header" style="color:#10b981;">4. PREVIOUS SQUAD (XI)</div>
+        <div class="col-header" style="color:var(--accent);">4. PREVIOUS PLAYING XI</div>
         <div class="col-content" id="col-4"></div>
     </div>
 
-    <!-- Col 5: 10 GL Teams -->
+    <!-- Col 5: 10 GL Teams (Post-Lineup Only) -->
     <div class="column">
-        <div class="col-header">5. 10 MEGA GL TEAMS</div>
-        <div class="col-content" id="col-5"></div>
+        <div class="col-header" style="color:#10b981;">5. 10 MEGA GL TEAMS</div>
+        <div class="col-content" id="col-5">
+            <p id="wait-msg" style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
+                ⚠️ Teams will be generated ONLY after Lineup is out.
+            </p>
+        </div>
     </div>
 </div>
 
 <script>
-    // Full Schedule & Master Database[span_4](start_span)[span_4](end_span)
-    const schedule = [
-        { date: "2026-05-13", t1: "RCB", t2: "KKR", venue: "Raipur" },
-        { date: "2026-05-14", t1: "PBKS", t2: "MI", venue: "Dharamshala" },
-        { date: "2026-05-15", t1: "CSK", t2: "SRH", venue: "Chennai" }
-    ];
-
-    const masterSquads = {
-        "RCB": ["Virat Kohli", "Josh Hazlewood", "Rajat Patidar", "Jitesh Sharma", "Bhuvneshwar Kumar", "Krunal Pandya", "Yash Dayal", "Anuj Rawat"],
-        "KKR": ["Rinku Singh", "Cameron Green", "Sunil Narine", "Harshit Rana", "Ramandeep Singh", "Vaibhav Arora", "Varun Chakaravarthy"],
-        "MI": ["Hardik Pandya", "Rohit Sharma", "Jasprit Bumrah", "Suryakumar Yadav", "Mitchell Starc", "Tilak Varma"],
-        "SRH": ["Pat Cummins", "Heinrich Klaasen", "Abhishek Sharma", "Travis Head", "Nitish Reddy", "Ishan Kishan", "Shahbaz Ahmed"]
+    // Master data from your provided squads[span_3](start_span)[span_3](end_span)
+    const masterData = {
+        "RCB": ["Virat Kohli", "Josh Hazlewood", "Rajat Patidar", "Jitesh Sharma", "Bhuvi", "Krunal Pandya", "Yash Dayal", "Anuj Rawat"],
+        "KKR": ["Rinku Singh", "Cameron Green", "Sunil Narine", "Harshit Rana", "Ramandeep Singh", "Vaibhav Arora", "Varun C", "Russell"]
     };
 
-    function runLiveSync() {
-        const today = new Date().toISOString().split('T')[0];
-        const match = schedule.find(m => m.date === today) || schedule[0]; // Auto-pick today's match[span_5](start_span)[span_5](end_span)
+    function loadData() {
+        const t1 = "RCB";
+        const t2 = "KKR";
 
-        // Column 1: Info[span_6](start_span)[span_6](end_span)
-        document.getElementById('col-1').innerHTML = `<div class="card-inner"><b>TONIGHT: ${match.t1} vs ${match.t2}</b><br>📅 ${match.date}<br>📍 ${match.venue}</div>`;
+        // Col 1: Info[span_4](start_span)[span_4](end_span)
+        document.getElementById('col-1').innerHTML = `<div class="card-inner"><b>TONIGHT: ${t1} vs ${t2}</b><br>📍 Raipur | 🕒 07:30 PM</div>`;
 
-        // Column 2: Pitch[span_7](start_span)[span_7](end_span)
-        document.getElementById('col-2').innerHTML = `<div class="card-inner"><b>Venue:</b> ${match.venue}<br><b>Report:</b> High scoring chances. Spinners key in middle overs.</div>`;
-
-        // Column 3: Pool[span_8](start_span)[span_8](end_span)
-        const pool = [...(masterSquads[match.t1] || []), ...(masterSquads[match.t2] || [])];
+        // Col 3: Pool[span_5](start_span)[span_5](end_span)
+        const pool = [...masterData[t1], ...masterData[t2]];
         document.getElementById('col-3').innerHTML = pool.map(p => `<div class="card-inner">${p}</div>`).join("");
 
-        // Column 4: Both Teams Previous XI[span_9](start_span)[span_9](end_span)
-        const t1XI = (masterSquads[match.t1] || []).slice(0, 11);
-        const t2XI = (masterSquads[match.t2] || []).slice(0, 11);
+        // Col 4: Both Teams Previous Playing XI[span_6](start_span)[span_6](end_span)
+        const t1XI = masterData[t1].slice(0, 11);
+        const t2XI = masterData[t2].slice(0, 11);
         document.getElementById('col-4').innerHTML = 
-            `<b style="color:var(--accent)">${match.t1} XI:</b>` + t1XI.map(p => `<div class="card-inner prev-item">👤 ${p}</div>`).join("") +
-            `<br><b style="color:var(--accent)">${match.t2} XI:</b>` + t2XI.map(p => `<div class="card-inner prev-item">👤 ${p}</div>`).join("");
+            `<b style="color:var(--accent)">${t1} Previous XI:</b>` + t1XI.map(p => `<div class="card-inner live-xi">👤 ${p}</div>`).join("") +
+            `<br><b style="color:var(--accent)">${t2} Previous XI:</b>` + t2XI.map(p => `<div class="card-inner live-xi">👤 ${p}</div>`).join("");
 
-        // Column 5: Generate Teams[span_10](start_span)[span_10](end_span)
-        generateGL([...t1XI, ...t2XI]);
+        // LOGIC: Column 5 update after Lineup[span_7](start_span)[span_7](end_span)
+        // Simulation: Change to true when lineup is officially out
+        const isLineupOut = true; 
+
+        if(isLineupOut) {
+            document.getElementById('wait-msg').style.display = 'none';
+            generateGL([...t1XI, ...t2XI]);
+        }
     }
 
     function generateGL(players) {
         const glDiv = document.getElementById('col-5');
-        glDiv.innerHTML = "";
         for(let i=1; i<=10; i++) {
             let shuf = [...players].sort(() => 0.5 - Math.random());
-            glDiv.innerHTML += `<div class="team-box"><b>MEGA GL #${i}</b><br><span style="color:var(--gold)">C: ${shuf[0]} | VC: ${shuf[1]}</span></div>`;
+            glDiv.innerHTML += `<div class="team-box"><b>COMBINATION #${i}</b><br><span style="color:var(--gold)">C: ${shuf[0]} | VC: ${shuf[1]}</span></div>`;
         }
     }
 
-    runLiveSync();
+    loadData();
 </script>
 </body>
 </html>
