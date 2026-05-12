@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+         <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,13 +8,14 @@
         :root { --bg: #0b0f19; --card: #1e293b; --accent: #00d2ff; --gold: #facc15; --text: #f8fafc; }
         body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         .header { background: #161d2f; padding: 15px; text-align: center; border-bottom: 2px solid var(--accent); }
-        .tabs { display: flex; background: #161d2f; sticky; top: 0; z-index: 10; }
+        .tabs { display: flex; background: #161d2f; position: sticky; top: 0; z-index: 10; }
         .tab { flex: 1; padding: 12px; text-align: center; font-size: 14px; cursor: pointer; color: #94a3b8; border-bottom: 2px solid transparent; }
         .active-tab { color: var(--accent); border-bottom: 2px solid var(--accent); background: rgba(0,210,255,0.05); }
         .content { padding: 15px; display: none; }
         .active-content { display: block; }
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #334155; }
-        .team-box { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--gold); }
+        .team-box { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--gold); position: relative; }
+        .gl-tag { position: absolute; top: 5px; right: 10px; font-size: 10px; background: #ef4444; padding: 2px 5px; border-radius: 3px; color: white; }
         .c-vc { font-weight: bold; color: var(--gold); margin-bottom: 5px; font-size: 14px; }
         .players { font-size: 12px; color: #cbd5e1; line-height: 1.6; }
     </style>
@@ -22,26 +23,25 @@
 <body>
 
 <div class="header">
-    <h3 style="margin:0;">🔥 AUTO-EXPERT PRO v3</h3>
-    <div id="status" style="font-size:10px; color:#00ff00; margin-top:5px;">● SYNCED WITH CRIC-SERVERS</div>
+    <h3 style="margin:0; color: var(--gold);">🏏 CRICKET MASTER EXPERT</h3>
+    <div style="font-size:10px; color:#00ff00; margin-top:5px;">● CRICKET MODE ONLY</div>
 </div>
 
 <div class="tabs">
-    <div class="tab active-tab" onclick="showTab('score')">LIVE SCORE</div>
-    <div class="tab" onclick="showTab('teams')">10 GL TEAMS</div>
+    <div class="tab active-tab" onclick="showTab('score')">LIVE CRICKET</div>
+    <div class="tab" onclick="showTab('teams')">10 GL COMBINATIONS</div>
 </div>
 
 <div id="score" class="content active-content">
-    <div class="card">
-        <h4 style="margin-top:0; color:var(--accent);">Live Match Status</h4>
-        <!-- Reliable Score Widget -->
-        <iframe src="https://m.cricbuzz.com/cricket-match-results" style="width:100%; height:450px; border:none; border-radius:8px;"></iframe>
+    <div class="card" style="padding:0; overflow:hidden;">
+        <iframe src="https://www.cricbuzz.com/cricket-match/live-scores" style="width:100%; height:500px; border:none;"></iframe>
     </div>
 </div>
 
 <div id="teams" class="content">
-    <h4 style="color:var(--gold); margin-top:0;">🏆 Today's 10 Grand League Teams</h4>
-    <div id="gl-container"></div>
+    <h4 style="color:var(--accent); margin-top:0;">🏆 Top 10 Grand League Teams</h4>
+    <div id="gl-container">
+        </div>
 </div>
 
 <script>
@@ -60,28 +60,34 @@
         const container = document.getElementById('gl-container');
         container.innerHTML = "";
         
-        // Dynamic Player Pool (Example)
-        const wk = ["Ishan Kishan", "Q. de Kock"];
-        const bat = ["Shubman Gill", "Suryakumar Yadav", "Travis Head", "Virat Kohli", "Sai Sudharsan"];
-        const ar = ["Hardik Pandya", "Rashid Khan", "Krunal Pandya"];
-        const bowl = ["Jasprit Bumrah", "Pat Cummins", "Mohit Sharma", "Noor Ahmad", "T. Natarajan"];
+        // Expert Player Pool (Recent Form)
+        const players = [
+            "Virat Kohli", "Shubman Gill", "Suryakumar Yadav", "Rashid Khan", 
+            "Hardik Pandya", "Jasprit Bumrah", "Travis Head", "Heinrich Klaasen", 
+            "Pat Cummins", "Rishabh Pant", "Arshdeep Singh", "Sanju Samson",
+            "Y. Chahal", "Axar Patel", "Ishan Kishan", "N. Rana"
+        ];
 
         for (let i = 1; i <= 10; i++) {
-            let captains = [...bat, ...ar, ...bowl].sort(() => 0.5 - Math.random());
-            let squad = [...wk.slice(0,1), ...bat.slice(0,3), ...ar.slice(0,2), ...bowl.slice(0,3)].sort(() => 0.5 - Math.random());
+            let shuffled = [...players].sort(() => 0.5 - Math.random());
+            let team = shuffled.slice(0, 11);
+            let captain = team[0];
+            let vc = team[1];
             
             let div = document.createElement('div');
             div.className = 'team-box';
             div.innerHTML = `
-                <div style="font-size:12px; color:var(--accent); margin-bottom:5px;">TEAM COMBINATION #${i}</div>
-                <div class="c-vc">👑 C: ${captains[0]} | 💠 VC: ${captains[1]}</div>
-                <div class="players"><b>Squad:</b> ${squad.join(', ')}...</div>
+                <div class="gl-tag">MEGA GL</div>
+                <div style="font-size:11px; color:var(--accent); margin-bottom:5px;">COMBINATION #${i}</div>
+                <div class="c-vc">👑 C: ${captain} | 💠 VC: ${vc}</div>
+                <div class="players"><b>Squad:</b> ${team.join(', ')}</div>
             `;
             container.appendChild(div);
         }
     }
+    // Auto-load on start
     renderTeams();
 </script>
 
 </body>
-</html>      
+</html> 
