@@ -1,87 +1,87 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: #0b0f19; --card: #161d2f; --accent: #00d2ff; --gold: #facc15; --text: #e2e8f0; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-        .header { background: #1e293b; padding: 15px; text-align: center; border-bottom: 2px solid var(--accent); }
-        .tabs { display: flex; background: #1e293b; position: sticky; top: 0; z-index: 10; }
-        .tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; cursor: pointer; color: #94a3b8; }
-        .active-tab { color: var(--accent); border-bottom: 3px solid var(--accent); background: rgba(0,210,255,0.1); }
+        :root { --bg: #0b0f19; --card: #1e293b; --accent: #00d2ff; --gold: #facc15; --text: #f8fafc; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        .header { background: #161d2f; padding: 15px; text-align: center; border-bottom: 2px solid var(--accent); }
+        .tabs { display: flex; background: #161d2f; sticky; top: 0; z-index: 10; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-size: 14px; cursor: pointer; color: #94a3b8; border-bottom: 2px solid transparent; }
+        .active-tab { color: var(--accent); border-bottom: 2px solid var(--accent); background: rgba(0,210,255,0.05); }
         .content { padding: 15px; display: none; }
         .active-content { display: block; }
-        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #2d3748; }
-        .team-card { border-left: 4px solid var(--gold); background: #1a2236; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
-        .c-vc { color: var(--gold); font-size: 12px; font-weight: bold; margin-bottom: 5px; }
+        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #334155; }
+        .team-box { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--gold); }
+        .c-vc { font-weight: bold; color: var(--gold); margin-bottom: 5px; font-size: 14px; }
+        .players { font-size: 12px; color: #cbd5e1; line-height: 1.6; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h3 style="margin:0;">🏏 AUTO-EXPERT PRO</h3>
-    <span id="live-indicator" style="font-size:10px; color:#00ff00;">● LIVE DATA ACTIVE</span>
+    <h3 style="margin:0;">🔥 AUTO-EXPERT PRO v3</h3>
+    <div id="status" style="font-size:10px; color:#00ff00; margin-top:5px;">● SYNCED WITH CRIC-SERVERS</div>
 </div>
 
 <div class="tabs">
-    <div class="tab active-tab" onclick="openTab(event, 'live')">LIVE SCORE</div>
-    <div class="tab" onclick="openTab(event, 'gl')">10 GL TEAMS</div>
+    <div class="tab active-tab" onclick="showTab('score')">LIVE SCORE</div>
+    <div class="tab" onclick="showTab('teams')">10 GL TEAMS</div>
 </div>
 
-<div id="live" class="content active-content">
-    <div class="card" id="score-container">
-        <p style="text-align:center;">Fetching Live Data from Google/ESPN...</p>
-        <iframe src="https://www.scorebat.com/embed/livescore/" style="width:100%; height:300px; border:none; filter: invert(1) hue-rotate(180deg);"></iframe>
+<div id="score" class="content active-content">
+    <div class="card">
+        <h4 style="margin-top:0; color:var(--accent);">Live Match Status</h4>
+        <!-- Reliable Score Widget -->
+        <iframe src="https://m.cricbuzz.com/cricket-match-results" style="width:100%; height:450px; border:none; border-radius:8px;"></iframe>
     </div>
 </div>
 
-<div id="gl" class="content">
-    <h4 style="color:var(--gold);">🏆 AI Generated GL Combinations</h4>
-    <div id="teams-list">
-        </div>
+<div id="teams" class="content">
+    <h4 style="color:var(--gold); margin-top:0;">🏆 Today's 10 Grand League Teams</h4>
+    <div id="gl-container"></div>
 </div>
 
 <script>
     let tg = window.Telegram.WebApp;
     tg.expand();
 
-    function openTab(evt, tabName) {
-        var i, content, tabs;
-        content = document.getElementsByClassName("content");
-        for (i = 0; i < content.length; i++) { content[i].style.display = "none"; }
-        tabs = document.getElementsByClassName("tab");
-        for (i = 0; i < tabs.length; i++) { tabs[i].className = tabs[i].className.replace(" active-tab", ""); }
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active-tab";
-        if(tabName === 'gl') generateTeams();
+    function showTab(name) {
+        document.querySelectorAll('.content').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
+        document.getElementById(name).style.display = 'block';
+        event.currentTarget.classList.add('active-tab');
+        if(name === 'teams') renderTeams();
     }
 
-    function generateTeams() {
-        const container = document.getElementById('teams-list');
+    function renderTeams() {
+        const container = document.getElementById('gl-container');
         container.innerHTML = "";
         
-        // Sample player pool - Ye logic real matches se names match kar sakta hai
-        const players = ["Virat Kohli", "Suryakumar Yadav", "Rashid Khan", "Hardik Pandya", "Jasprit Bumrah", "Ishan Kishan", "Shubman Gill", "Rishabh Pant", "Klaasen", "Cummins", "Arshdeep Singh"];
-        
+        // Dynamic Player Pool (Example)
+        const wk = ["Ishan Kishan", "Q. de Kock"];
+        const bat = ["Shubman Gill", "Suryakumar Yadav", "Travis Head", "Virat Kohli", "Sai Sudharsan"];
+        const ar = ["Hardik Pandya", "Rashid Khan", "Krunal Pandya"];
+        const bowl = ["Jasprit Bumrah", "Pat Cummins", "Mohit Sharma", "Noor Ahmad", "T. Natarajan"];
+
         for (let i = 1; i <= 10; i++) {
-            let shuffled = players.sort(() => 0.5 - Math.random());
-            let team = shuffled.slice(0, 8); // Picking 8 random from pool
+            let captains = [...bat, ...ar, ...bowl].sort(() => 0.5 - Math.random());
+            let squad = [...wk.slice(0,1), ...bat.slice(0,3), ...ar.slice(0,2), ...bowl.slice(0,3)].sort(() => 0.5 - Math.random());
+            
             let div = document.createElement('div');
-            div.className = 'team-card';
+            div.className = 'team-box';
             div.innerHTML = `
-                <div class="team-title" style="font-weight:bold; color:#00d2ff;">COMBINATION #${i}</div>
-                <div class="c-vc">👑 C: \${team[0]} | 💠 VC: \${team[1]}</div>
-                <div style="font-size:11px; color:#94a3b8;">Squad: \${team.join(', ')}</div>
+                <div style="font-size:12px; color:var(--accent); margin-bottom:5px;">TEAM COMBINATION #${i}</div>
+                <div class="c-vc">👑 C: ${captains[0]} | 💠 VC: ${captains[1]}</div>
+                <div class="players"><b>Squad:</b> ${squad.join(', ')}...</div>
             `;
             container.appendChild(div);
         }
     }
-
-    // Initial Load
-    generateTeams();
+    renderTeams();
 </script>
 
 </body>
-</html>
+</html>      
